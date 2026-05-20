@@ -19,6 +19,7 @@ const persistConfig = {
     key: 'root',
     version: 1,
     storage,
+    whitelist: ['auth'], // Only persist auth state, not stale job/company data
 }
 
 const rootReducer = combineReducers({
