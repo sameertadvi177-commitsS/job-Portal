@@ -1,7 +1,7 @@
 import React from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Button } from '../ui/button'
-import { Avatar, AvatarImage } from '../ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
 import { LogOut, User2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -73,13 +73,19 @@ const Navbar = () => {
                                 <PopoverTrigger asChild>
                                     <Avatar className="cursor-pointer">
                                         <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" />
+                                        <AvatarFallback className="bg-[#6A38C2] text-white font-bold">
+                                            {user?.fullname ? user.fullname.split(" ").map(n => n[0]).join("").toUpperCase() : "U"}
+                                        </AvatarFallback>
                                     </Avatar>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-80">
                                     <div className=''>
-                                        <div className='flex gap-2 space-y-2'>
+                                        <div className='flex items-center gap-3 my-2'>
                                             <Avatar className="cursor-pointer">
                                                 <AvatarImage src={user?.profile?.profilePhoto} alt="@shadcn" />
+                                                <AvatarFallback className="bg-[#6A38C2] text-white font-bold">
+                                                    {user?.fullname ? user.fullname.split(" ").map(n => n[0]).join("").toUpperCase() : "U"}
+                                                </AvatarFallback>
                                             </Avatar>
                                             <div>
                                                 <h4 className='font-medium'>{user?.fullname}</h4>
