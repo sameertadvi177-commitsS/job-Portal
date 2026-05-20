@@ -42,7 +42,15 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () =>{
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () =>{
+        connectDB();
+        console.log(`Server is running on port ${PORT}`);
+    });
+} else {
+    // In production (Vercel), connect to DB but don't listen on a port (Serverless environment)
     connectDB();
-    console.log(`Server is running on port ${PORT}`);
-})
+}
+
+// Export the Express API for Vercel
+export default app;

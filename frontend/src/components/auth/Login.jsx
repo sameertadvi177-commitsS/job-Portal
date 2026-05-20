@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLoading, setUser } from '@/redux/authSlice'
 import { Loader2 } from 'lucide-react'
+import Footer from '../shared/Footer'
 
 const Login = () => {
     const [input, setInput] = useState({
@@ -18,7 +19,7 @@ const Login = () => {
         password: "",
         role: "",
     });
-    const { loading,user } = useSelector(store => store.auth);
+    const { loading, user } = useSelector(store => store.auth);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -52,44 +53,50 @@ const Login = () => {
             dispatch(setLoading(false));
         }
     }
-    useEffect(()=>{
-        if(user){
+    useEffect(() => {
+        if (user) {
             if (user.role === 'recruiter') {
                 navigate("/admin/companies");
             } else {
                 navigate("/");
             }
         }
-    },[user, navigate])
+    }, [user, navigate])
     return (
-        <div>
+        <div className='min-h-screen bg-gray-50'>
             <Navbar />
-            <div className='flex items-center justify-center max-w-7xl mx-auto'>
-                <form onSubmit={submitHandler} className='w-1/2 border border-gray-200 rounded-md p-4 my-10'>
-                    <h1 className='font-bold text-xl mb-5'>Login</h1>
-                    <div className='my-2'>
-                        <Label>Email</Label>
+            <div className='flex items-center justify-center min-h-[calc(100vh-8rem)] px-4'>
+                <form onSubmit={submitHandler} className='w-full max-w-md bg-white shadow-lg rounded-xl p-8 my-10 border border-gray-100'>
+                    <h1 className='font-bold text-2xl mb-2 text-gray-900'>Welcome Back</h1>
+                    <p className='text-sm text-gray-500 mb-6'>Sign in to continue to your account</p>
+
+                    <div className='mb-4'>
+                        <Label className='text-sm font-medium text-gray-700'>Email</Label>
                         <Input
                             type="email"
                             value={input.email}
                             name="email"
                             onChange={changeEventHandler}
-                            placeholder="patel@gmail.com"
+                            placeholder="you@example.com"
+                            className='mt-1'
                         />
                     </div>
 
-                    <div className='my-2'>
-                        <Label>Password</Label>
+                    <div className='mb-4'>
+                        <Label className='text-sm font-medium text-gray-700'>Password</Label>
                         <Input
                             type="password"
                             value={input.password}
                             name="password"
                             onChange={changeEventHandler}
-                            placeholder="********"
+                            placeholder="••••••••"
+                            className='mt-1'
                         />
                     </div>
-                    <div className='flex items-center justify-between'>
-                        <RadioGroup className="flex items-center gap-4 my-5">
+
+                    <div className='mb-6'>
+                        <Label className='text-sm font-medium text-gray-700 mb-2 block'>I am a</Label>
+                        <RadioGroup className="flex items-center gap-6">
                             <div className="flex items-center space-x-2">
                                 <Input
                                     type="radio"
@@ -97,9 +104,9 @@ const Login = () => {
                                     value="student"
                                     checked={input.role === 'student'}
                                     onChange={changeEventHandler}
-                                    className="cursor-pointer"
+                                    className="cursor-pointer w-4 h-4"
                                 />
-                                <Label htmlFor="r1">Student</Label>
+                                <Label>Student</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Input
@@ -108,18 +115,25 @@ const Login = () => {
                                     value="recruiter"
                                     checked={input.role === 'recruiter'}
                                     onChange={changeEventHandler}
-                                    className="cursor-pointer"
+                                    className="cursor-pointer w-4 h-4"
                                 />
-                                <Label htmlFor="r2">Recruiter</Label>
+                                <Label>Recruiter</Label>
                             </div>
                         </RadioGroup>
                     </div>
+
                     {
-                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
+                        loading
+                            ? <Button className="w-full bg-[#6A38C2] hover:bg-[#5b30a6]" disabled> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button>
+                            : <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5b30a6]">Login</Button>
                     }
-                    <span className='text-sm'>Don't have an account? <Link to="/signup" className='text-blue-600'>Signup</Link></span>
+
+                    <p className='text-sm text-center mt-4 text-gray-500'>
+                        Don't have an account? <Link to="/signup" className='text-[#6A38C2] font-medium hover:underline'>Sign up</Link>
+                    </p>
                 </form>
             </div>
+            <Footer />
         </div>
     )
 }

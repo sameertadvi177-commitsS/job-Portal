@@ -9,11 +9,12 @@ const jobSlice = createSlice({
         searchJobByText: "",
         allAppliedJobs: [],
         searchedQuery: "",
-        // Enhanced filter state
+        // Enhanced filter state — location & jobType now support arrays for multi-select
         filters: {
             keyword: "",
-            location: "",
-            jobType: "",
+            location: [],      // array of selected locations
+            jobType: [],       // array of selected job types
+            industry: [],      // array of selected industries (mapped to keyword search)
             salaryMin: 0,
             salaryMax: 0,
             experience: 0,
@@ -56,8 +57,9 @@ const jobSlice = createSlice({
         resetFilters: (state) => {
             state.filters = {
                 keyword: "",
-                location: "",
-                jobType: "",
+                location: [],
+                jobType: [],
+                industry: [],
                 salaryMin: 0,
                 salaryMax: 0,
                 experience: 0,

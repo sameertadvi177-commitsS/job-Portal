@@ -15,9 +15,25 @@ const useGetAllJobs = () => {
 
                 // Build query params from filters
                 const params = new URLSearchParams();
-                if (filters.keyword) params.append('keyword', filters.keyword);
-                if (filters.location) params.append('location', filters.location);
-                if (filters.jobType) params.append('jobType', filters.jobType);
+
+                // Keyword — combine search keyword + industry selections with pipe for OR matching
+                const keywordParts = [];
+                if (filters.keyword) keywordParts.push(filters.keyword);
+                if (filters.industry && filters.industry.length > 0) {
+                    keywordParts.push(...filters.industry);
+                }
+                if (keywordParts.length > 0) params.append('keyword', keywordParts.join("|"));
+
+                // Location — send as comma-separated for multi-select
+                if (filters.location && filters.location.length > 0) {
+                    params.append('location', filters.location.join(","));
+                }
+
+                // Job Type — send as comma-separated for multi-select
+                if (filters.jobType && filters.jobType.length > 0) {
+                    params.append('jobType', filters.jobType.join(","));
+                }
+
                 if (filters.salaryMin > 0) params.append('salaryMin', filters.salaryMin);
                 if (filters.salaryMax > 0) params.append('salaryMax', filters.salaryMax);
                 if (filters.experience > 0) params.append('experience', filters.experience);

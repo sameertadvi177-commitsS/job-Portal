@@ -114,26 +114,49 @@ export const getAllJobs = async (req, res) => {
         // Build dynamic query
         const query = {};
 
-        // Text search on title and description
+        // Text search on title and description (supports pipe-separated OR keywords)
         if (keyword) {
-            // Escape regex special characters to prevent ReDoS
-            const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            query.$or = [
-                { title: { $regex: escapedKeyword, $options: "i" } },
-                { description: { $regex: escapedKeyword, $options: "i" } },
-            ];
+            // Split by pipe for multi-keyword OR search
+            const keywords = keyword.split("|").map(k => k.trim()).filter(k => k.length > 0);
+            if (keywords.length === 1) {
+                const escapedKeyword = keywords[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                query.$or = [
+                    { title: { $regex: escapedKeyword, $options: "i" } },
+                    { description: { $regex: escapedKeyword, $options: "i" } },
+                ];
+            } else {
+                // Build OR conditions for each keyword
+                const orConditions = keywords.flatMap(k => {
+                    const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    return [
+                        { title: { $regex: escaped, $options: "i" } },
+                        { description: { $regex: escaped, $options: "i" } },
+                    ];
+                });
+                query.$or = orConditions;
+            }
         }
 
-        // Location filter
+        // Location filter (supports comma-separated multi-values)
         if (location) {
-            const escapedLocation = location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            query.location = { $regex: escapedLocation, $options: "i" };
+            const locations = location.split(",").map(l => l.trim()).filter(l => l.length > 0);
+            if (locations.length === 1) {
+                const escapedLocation = locations[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                query.location = { $regex: escapedLocation, $options: "i" };
+            } else if (locations.length > 1) {
+                query.location = { $in: locations.map(l => new RegExp(l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "i")) };
+            }
         }
 
-        // Job type filter
+        // Job type filter (supports comma-separated multi-values)
         if (jobType) {
-            const escapedJobType = jobType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            query.jobType = { $regex: escapedJobType, $options: "i" };
+            const jobTypes = jobType.split(",").map(j => j.trim()).filter(j => j.length > 0);
+            if (jobTypes.length === 1) {
+                const escapedJobType = jobTypes[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                query.jobType = { $regex: escapedJobType, $options: "i" };
+            } else if (jobTypes.length > 1) {
+                query.jobType = { $in: jobTypes.map(j => new RegExp(j.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "i")) };
+            }
         }
 
         // Salary range filter

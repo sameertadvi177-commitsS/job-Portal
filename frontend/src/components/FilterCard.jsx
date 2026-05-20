@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
-import { Label } from './ui/label'
+import React from 'react'
 import { Button } from './ui/button'
 import { useDispatch, useSelector } from 'react-redux'
 import { setFilters, resetFilters } from '@/redux/jobSlice'
-import { X } from 'lucide-react'
+import { X, Check } from 'lucide-react'
 
 const locationOptions = ["Bangalore", "Hyderabad", "Pune", "Mumbai", "Chennai", "Ahmedabad", "Jaipur", "Gurgaon", "Jodhpur", "Delhi", "Remote"];
 const industryOptions = ["Frontend Developer", "Backend Developer", "FullStack Developer", "Data Science", "Graphic Designer", "Artificial Intelligence", "Ethical Hacking"];
@@ -27,65 +26,70 @@ const FilterCard = () => {
     const dispatch = useDispatch();
     const { filters } = useSelector(store => store.job);
 
-    const [selectedLocation, setSelectedLocation] = useState(filters.location || "");
-    const [selectedIndustry, setSelectedIndustry] = useState(filters.keyword || "");
-    const [selectedSalary, setSelectedSalary] = useState(null);
-    const [selectedJobType, setSelectedJobType] = useState(filters.jobType || "");
-    const [selectedExperience, setSelectedExperience] = useState(null);
-
-    const applyLocationFilter = (loc) => {
-        const newLoc = selectedLocation === loc ? "" : loc;
-        setSelectedLocation(newLoc);
-        dispatch(setFilters({ location: newLoc, page: 1 }));
+    // Multi-select helpers
+    const toggleArrayFilter = (key, value) => {
+        const current = filters[key] || [];
+        const updated = current.includes(value)
+            ? current.filter(v => v !== value)
+            : [...current, value];
+        dispatch(setFilters({ [key]: updated, page: 1 }));
     };
 
-    const applyIndustryFilter = (ind) => {
-        const newInd = selectedIndustry === ind ? "" : ind;
-        setSelectedIndustry(newInd);
-        dispatch(setFilters({ keyword: newInd, page: 1 }));
+    const isSelected = (key, value) => {
+        const current = filters[key] || [];
+        return current.includes(value);
     };
 
+    // Salary filter (single-select radio)
     const applySalaryFilter = (range) => {
-        if (selectedSalary?.label === range.label) {
-            setSelectedSalary(null);
+        if (filters.salaryMin === range.min && filters.salaryMax === range.max) {
             dispatch(setFilters({ salaryMin: 0, salaryMax: 0, page: 1 }));
         } else {
-            setSelectedSalary(range);
             dispatch(setFilters({ salaryMin: range.min, salaryMax: range.max, page: 1 }));
         }
     };
 
-    const applyJobTypeFilter = (type) => {
-        const newType = selectedJobType === type ? "" : type;
-        setSelectedJobType(newType);
-        dispatch(setFilters({ jobType: newType, page: 1 }));
-    };
+    const isSalarySelected = (range) => filters.salaryMin === range.min && filters.salaryMax === range.max;
 
+    // Experience filter (single-select radio)
     const applyExperienceFilter = (exp) => {
-        if (selectedExperience?.value === exp.value) {
-            setSelectedExperience(null);
+        if (filters.experience === exp.value) {
             dispatch(setFilters({ experience: 0, page: 1 }));
         } else {
-            setSelectedExperience(exp);
             dispatch(setFilters({ experience: exp.value, page: 1 }));
         }
     };
 
     const clearAllFilters = () => {
-        setSelectedLocation("");
-        setSelectedIndustry("");
-        setSelectedSalary(null);
-        setSelectedJobType("");
-        setSelectedExperience(null);
         dispatch(resetFilters());
     };
 
-    const hasActiveFilters = selectedLocation || selectedIndustry || selectedSalary || selectedJobType || selectedExperience;
+    const hasActiveFilters =
+        (filters.location && filters.location.length > 0) ||
+        (filters.industry && filters.industry.length > 0) ||
+        (filters.jobType && filters.jobType.length > 0) ||
+        filters.salaryMin > 0 || filters.salaryMax > 0 ||
+        filters.experience > 0;
+
+    // Count active filters
+    const activeCount =
+        (filters.location?.length || 0) +
+        (filters.industry?.length || 0) +
+        (filters.jobType?.length || 0) +
+        (filters.salaryMin > 0 || filters.salaryMax > 0 ? 1 : 0) +
+        (filters.experience > 0 ? 1 : 0);
 
     return (
-        <div className='w-full bg-white p-4 rounded-lg shadow-sm border border-gray-100'>
+        <div className='w-full bg-white p-4 rounded-xl shadow-sm border border-gray-100'>
             <div className='flex items-center justify-between mb-3'>
-                <h1 className='font-bold text-lg'>Filters</h1>
+                <div className='flex items-center gap-2'>
+                    <h1 className='font-bold text-lg'>Filters</h1>
+                    {activeCount > 0 && (
+                        <span className='bg-[#6A38C2] text-white text-xs px-2 py-0.5 rounded-full font-medium'>
+                            {activeCount}
+                        </span>
+                    )}
+                </div>
                 {hasActiveFilters && (
                     <Button
                         variant="ghost"
@@ -100,27 +104,29 @@ const FilterCard = () => {
             </div>
             <hr className='mb-4' />
 
-            {/* Location Filter */}
+            {/* Location Filter — Multi-Select Checkboxes */}
             <div className='mb-5'>
                 <h2 className='font-semibold text-sm text-gray-700 mb-2'>📍 Location</h2>
-                <div className='flex flex-wrap gap-1.5'>
+                <div className='flex flex-col gap-1.5'>
                     {locationOptions.map((loc) => (
-                        <button
-                            key={loc}
-                            onClick={() => applyLocationFilter(loc)}
-                            className={`text-xs px-2.5 py-1 rounded-full border transition-all duration-200 ${
-                                selectedLocation === loc
-                                    ? 'bg-[#6A38C2] text-white border-[#6A38C2]'
-                                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-[#6A38C2] hover:text-[#6A38C2]'
-                            }`}
-                        >
-                            {loc}
-                        </button>
+                        <label key={loc} className='flex items-center gap-2 cursor-pointer group'>
+                            <input
+                                type="checkbox"
+                                checked={isSelected('location', loc)}
+                                onChange={() => toggleArrayFilter('location', loc)}
+                                className='w-3.5 h-3.5 rounded accent-[#6A38C2]'
+                            />
+                            <span className={`text-sm transition-colors ${
+                                isSelected('location', loc) ? 'text-[#6A38C2] font-medium' : 'text-gray-600 group-hover:text-gray-800'
+                            }`}>
+                                {loc}
+                            </span>
+                        </label>
                     ))}
                 </div>
             </div>
 
-            {/* Industry Filter */}
+            {/* Industry Filter — Multi-Select Checkboxes */}
             <div className='mb-5'>
                 <h2 className='font-semibold text-sm text-gray-700 mb-2'>💼 Industry</h2>
                 <div className='flex flex-col gap-1.5'>
@@ -128,12 +134,12 @@ const FilterCard = () => {
                         <label key={ind} className='flex items-center gap-2 cursor-pointer group'>
                             <input
                                 type="checkbox"
-                                checked={selectedIndustry === ind}
-                                onChange={() => applyIndustryFilter(ind)}
+                                checked={isSelected('industry', ind)}
+                                onChange={() => toggleArrayFilter('industry', ind)}
                                 className='w-3.5 h-3.5 rounded accent-[#6A38C2]'
                             />
                             <span className={`text-sm transition-colors ${
-                                selectedIndustry === ind ? 'text-[#6A38C2] font-medium' : 'text-gray-600 group-hover:text-gray-800'
+                                isSelected('industry', ind) ? 'text-[#6A38C2] font-medium' : 'text-gray-600 group-hover:text-gray-800'
                             }`}>
                                 {ind}
                             </span>
@@ -142,27 +148,29 @@ const FilterCard = () => {
                 </div>
             </div>
 
-            {/* Job Type Filter */}
+            {/* Job Type Filter — Multi-Select Checkboxes */}
             <div className='mb-5'>
                 <h2 className='font-semibold text-sm text-gray-700 mb-2'>📋 Job Type</h2>
-                <div className='flex flex-wrap gap-1.5'>
+                <div className='flex flex-col gap-1.5'>
                     {jobTypeOptions.map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => applyJobTypeFilter(type)}
-                            className={`text-xs px-2.5 py-1 rounded-full border transition-all duration-200 ${
-                                selectedJobType === type
-                                    ? 'bg-[#F83002] text-white border-[#F83002]'
-                                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-[#F83002] hover:text-[#F83002]'
-                            }`}
-                        >
-                            {type}
-                        </button>
+                        <label key={type} className='flex items-center gap-2 cursor-pointer group'>
+                            <input
+                                type="checkbox"
+                                checked={isSelected('jobType', type)}
+                                onChange={() => toggleArrayFilter('jobType', type)}
+                                className='w-3.5 h-3.5 rounded accent-[#6A38C2]'
+                            />
+                            <span className={`text-sm transition-colors ${
+                                isSelected('jobType', type) ? 'text-[#6A38C2] font-medium' : 'text-gray-600 group-hover:text-gray-800'
+                            }`}>
+                                {type}
+                            </span>
+                        </label>
                     ))}
                 </div>
             </div>
 
-            {/* Salary Range Filter */}
+            {/* Salary Range Filter — Single-Select Radio */}
             <div className='mb-5'>
                 <h2 className='font-semibold text-sm text-gray-700 mb-2'>💰 Salary</h2>
                 <div className='flex flex-col gap-1.5'>
@@ -171,12 +179,12 @@ const FilterCard = () => {
                             <input
                                 type="radio"
                                 name="salary"
-                                checked={selectedSalary?.label === range.label}
+                                checked={isSalarySelected(range)}
                                 onChange={() => applySalaryFilter(range)}
                                 className='w-3.5 h-3.5 accent-[#6A38C2]'
                             />
                             <span className={`text-sm transition-colors ${
-                                selectedSalary?.label === range.label ? 'text-[#6A38C2] font-medium' : 'text-gray-600 group-hover:text-gray-800'
+                                isSalarySelected(range) ? 'text-[#6A38C2] font-medium' : 'text-gray-600 group-hover:text-gray-800'
                             }`}>
                                 {range.label}
                             </span>
@@ -185,7 +193,7 @@ const FilterCard = () => {
                 </div>
             </div>
 
-            {/* Experience Filter */}
+            {/* Experience Filter — Single-Select Radio */}
             <div className='mb-3'>
                 <h2 className='font-semibold text-sm text-gray-700 mb-2'>⭐ Experience</h2>
                 <div className='flex flex-col gap-1.5'>
@@ -194,12 +202,12 @@ const FilterCard = () => {
                             <input
                                 type="radio"
                                 name="experience"
-                                checked={selectedExperience?.value === exp.value}
+                                checked={filters.experience === exp.value && exp.value > 0}
                                 onChange={() => applyExperienceFilter(exp)}
                                 className='w-3.5 h-3.5 accent-[#6A38C2]'
                             />
                             <span className={`text-sm transition-colors ${
-                                selectedExperience?.value === exp.value ? 'text-[#6A38C2] font-medium' : 'text-gray-600 group-hover:text-gray-800'
+                                filters.experience === exp.value && exp.value > 0 ? 'text-[#6A38C2] font-medium' : 'text-gray-600 group-hover:text-gray-800'
                             }`}>
                                 {exp.label}
                             </span>
@@ -207,6 +215,45 @@ const FilterCard = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Active Filters Summary */}
+            {hasActiveFilters && (
+                <div className='mt-4 pt-4 border-t border-gray-100'>
+                    <h3 className='text-xs font-semibold text-gray-500 mb-2'>ACTIVE FILTERS</h3>
+                    <div className='flex flex-wrap gap-1.5'>
+                        {filters.location?.map(loc => (
+                            <span key={loc} className='inline-flex items-center gap-1 text-xs bg-purple-50 text-[#6A38C2] px-2 py-1 rounded-full'>
+                                {loc}
+                                <X className='w-3 h-3 cursor-pointer hover:text-red-500' onClick={() => toggleArrayFilter('location', loc)} />
+                            </span>
+                        ))}
+                        {filters.industry?.map(ind => (
+                            <span key={ind} className='inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full'>
+                                {ind}
+                                <X className='w-3 h-3 cursor-pointer hover:text-red-500' onClick={() => toggleArrayFilter('industry', ind)} />
+                            </span>
+                        ))}
+                        {filters.jobType?.map(type => (
+                            <span key={type} className='inline-flex items-center gap-1 text-xs bg-orange-50 text-[#F83002] px-2 py-1 rounded-full'>
+                                {type}
+                                <X className='w-3 h-3 cursor-pointer hover:text-red-500' onClick={() => toggleArrayFilter('jobType', type)} />
+                            </span>
+                        ))}
+                        {(filters.salaryMin > 0 || filters.salaryMax > 0) && (
+                            <span className='inline-flex items-center gap-1 text-xs bg-green-50 text-green-600 px-2 py-1 rounded-full'>
+                                {filters.salaryMax > 0 ? `${filters.salaryMin}-${filters.salaryMax} LPA` : `${filters.salaryMin}+ LPA`}
+                                <X className='w-3 h-3 cursor-pointer hover:text-red-500' onClick={() => dispatch(setFilters({ salaryMin: 0, salaryMax: 0, page: 1 }))} />
+                            </span>
+                        )}
+                        {filters.experience > 0 && (
+                            <span className='inline-flex items-center gap-1 text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full'>
+                                ≤{filters.experience} yrs exp
+                                <X className='w-3 h-3 cursor-pointer hover:text-red-500' onClick={() => dispatch(setFilters({ experience: 0, page: 1 }))} />
+                            </span>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
