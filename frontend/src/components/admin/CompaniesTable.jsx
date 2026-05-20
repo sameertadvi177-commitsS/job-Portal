@@ -34,29 +34,36 @@ const CompaniesTable = () => {
                 </TableHeader>
                 <TableBody>
                     {
-                        filterCompany?.map((company) => (
-                            <tr key={company._id}>
-                                <TableCell>
-                                    <Avatar>
-                                        <AvatarImage src={company.logo}/>
-                                    </Avatar>
+                        filterCompany?.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center text-gray-500 py-8">
+                                    No companies registered yet. Add a new company to get started.
                                 </TableCell>
-                                <TableCell>{company.name}</TableCell>
-                                <TableCell>{company.createdAt.split("T")[0]}</TableCell>
-                                <TableCell className="text-right cursor-pointer">
-                                    <Popover>
-                                        <PopoverTrigger><MoreHorizontal /></PopoverTrigger>
-                                        <PopoverContent className="w-32">
-                                            <div onClick={()=> navigate(`/admin/companies/${company._id}`)} className='flex items-center gap-2 w-fit cursor-pointer'>
-                                                <Edit2 className='w-4' />
-                                                <span>Edit</span>
-                                            </div>
-                                        </PopoverContent>
-                                    </Popover>
-                                </TableCell>
-                            </tr>
-
-                        ))
+                            </TableRow>
+                        ) : (
+                            filterCompany?.map((company) => (
+                                <tr key={company._id}>
+                                    <TableCell>
+                                        <Avatar>
+                                            <AvatarImage src={company.logo || "https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg"}/>
+                                        </Avatar>
+                                    </TableCell>
+                                    <TableCell>{company.name}</TableCell>
+                                    <TableCell>{company.createdAt ? company.createdAt.split("T")[0] : "NA"}</TableCell>
+                                    <TableCell className="text-right cursor-pointer">
+                                        <Popover>
+                                            <PopoverTrigger><MoreHorizontal className="inline-block" /></PopoverTrigger>
+                                            <PopoverContent className="w-32 p-2">
+                                                <div onClick={()=> navigate(`/admin/companies/${company._id}`)} className='flex items-center gap-2 w-full p-2 rounded hover:bg-gray-100 cursor-pointer text-sm transition-colors'>
+                                                    <Edit2 className='w-4' />
+                                                    <span>Edit</span>
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>
+                                    </TableCell>
+                                </tr>
+                            ))
+                        )
                     }
                 </TableBody>
             </Table>

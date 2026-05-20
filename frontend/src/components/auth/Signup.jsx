@@ -64,9 +64,13 @@ const Signup = () => {
 
     useEffect(()=>{
         if(user){
-            navigate("/");
+            if (user.role === 'recruiter') {
+                navigate("/admin/companies");
+            } else {
+                navigate("/");
+            }
         }
-    },[])
+    },[user, navigate])
     return (
         <div>
             <Navbar />

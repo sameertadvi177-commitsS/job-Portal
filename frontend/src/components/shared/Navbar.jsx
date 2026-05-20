@@ -8,6 +8,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
 import { USER_API_END_POINT } from '@/utils/constant'
 import { setUser } from '@/redux/authSlice'
+import { setCompanies, setSingleCompany } from '@/redux/companySlice'
+import { setAllAdminJobs, setAllAppliedJobs } from '@/redux/jobSlice'
+import { setAllApplicants } from '@/redux/applicationSlice'
 import { toast } from 'sonner'
 
 const Navbar = () => {
@@ -20,6 +23,12 @@ const Navbar = () => {
             const res = await axios.get(`${USER_API_END_POINT}/logout`, { withCredentials: true });
             if (res.data.success) {
                 dispatch(setUser(null));
+                // Clear other state slices to avoid state leak before page refresh or next login
+                dispatch(setCompanies([]));
+                dispatch(setSingleCompany(null));
+                dispatch(setAllAdminJobs([]));
+                dispatch(setAllAppliedJobs([]));
+                dispatch(setAllApplicants(null));
                 navigate("/");
                 toast.success(res.data.message);
             }
@@ -79,7 +88,7 @@ const Navbar = () => {
                                         </div>
                                         <div className='flex flex-col my-2 text-gray-600'>
                                             {
-                                                user && user.role === 'student' && (
+                                                user && (
                                                     <div className='flex w-fit items-center gap-2 cursor-pointer'>
                                                         <User2 />
                                                         <Button variant="link"> <Link to="/profile">View Profile</Link></Button>

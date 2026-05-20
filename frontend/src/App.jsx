@@ -17,6 +17,8 @@ import ProtectedRoute from './components/admin/ProtectedRoute'
 import NotFound from './components/NotFound'
 
 
+import AuthenticatedRoute from './components/shared/AuthenticatedRoute'
+
 const appRouter = createBrowserRouter([
   {
     path: '/',
@@ -44,7 +46,7 @@ const appRouter = createBrowserRouter([
   },
   {
     path: "/profile",
-    element: <Profile />
+    element: <AuthenticatedRoute><Profile /></AuthenticatedRoute>
   },
   // admin ke liye yha se start hoga
   {

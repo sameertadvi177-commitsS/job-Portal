@@ -19,14 +19,33 @@ const AppliedJobTable = () => {
                 </TableHeader>
                 <TableBody>
                     {
-                        allAppliedJobs.length <= 0 ? <span>You haven't applied any job yet.</span> : allAppliedJobs.map((appliedJob) => (
-                            <TableRow key={appliedJob._id}>
-                                <TableCell>{appliedJob?.createdAt?.split("T")[0]}</TableCell>
-                                <TableCell>{appliedJob.job?.title}</TableCell>
-                                <TableCell>{appliedJob.job?.company?.name}</TableCell>
-                                <TableCell className="text-right"><Badge className={`${appliedJob?.status === "rejected" ? 'bg-red-400' : appliedJob.status === 'pending' ? 'bg-gray-400' : 'bg-green-400'}`}>{appliedJob.status.toUpperCase()}</Badge></TableCell>
+                        allAppliedJobs.length <= 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center text-gray-500 py-4">
+                                    You haven't applied to any jobs yet.
+                                </TableCell>
                             </TableRow>
-                        ))
+                        ) : allAppliedJobs.map((appliedJob) => {
+                            const status = appliedJob?.status || 'pending';
+                            return (
+                                <TableRow key={appliedJob._id}>
+                                    <TableCell>{appliedJob?.createdAt ? appliedJob.createdAt.split("T")[0] : "NA"}</TableCell>
+                                    <TableCell>{appliedJob.job?.title || "NA"}</TableCell>
+                                    <TableCell>{appliedJob.job?.company?.name || "NA"}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Badge className={`capitalize border px-2.5 py-0.5 rounded-full ${
+                                            status === 'accepted' 
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
+                                                : status === 'rejected' 
+                                                ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' 
+                                                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                        }`}>
+                                            {status}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })
                     }
                 </TableBody>
             </Table>

@@ -38,7 +38,11 @@ const Login = () => {
             });
             if (res.data.success) {
                 dispatch(setUser(res.data.user));
-                navigate("/");
+                if (res.data.user.role === 'recruiter') {
+                    navigate("/admin/companies");
+                } else {
+                    navigate("/");
+                }
                 toast.success(res.data.message);
             }
         } catch (error) {
@@ -50,9 +54,13 @@ const Login = () => {
     }
     useEffect(()=>{
         if(user){
-            navigate("/");
+            if (user.role === 'recruiter') {
+                navigate("/admin/companies");
+            } else {
+                navigate("/");
+            }
         }
-    },[])
+    },[user, navigate])
     return (
         <div>
             <Navbar />
